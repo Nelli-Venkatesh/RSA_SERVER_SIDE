@@ -6,17 +6,8 @@ using System.Threading.Tasks;
 
 namespace SERVER_SIDE_RSA
 {
-    public class MAIN_MODULE
+    public static class MAIN_MODULE
     {
-        public int KEY_LENGTH { get; set; }
-        public string EXPONENT { get; set; }
-        public string MODULES { get; set; }
-        public string P { get; set; }
-        public string Q { get; set; }
-        public string D { get; set; }
-        public string DP { get; set; }
-        public string DQ { get; set; }
-        public string INVERSE_Q { get; set; }
-
+        
     }
 }
