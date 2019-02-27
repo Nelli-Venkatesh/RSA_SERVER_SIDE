@@ -8,7 +8,7 @@ namespace SERVER_SIDE_RSA
 {
     public class CORE_MODULE
     {
-        public string KEY_LENGTH { get; set; }
+        public int KEY_LENGTH { get; set; }
         public string EXPONENT { get; set; }
         public string MODULES { get; set; }
         public string P { get; set; }
