@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SERVER_SIDE_RSA
 {
-    class AES_MODULE
+    class SUPPORT_MODULE
     {
     }
 }

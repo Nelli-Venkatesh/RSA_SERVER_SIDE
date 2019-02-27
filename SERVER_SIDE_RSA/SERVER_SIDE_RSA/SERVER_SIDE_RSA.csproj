@@ -41,10 +41,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AES_MODULE.cs" />
-    <Compile Include="CORE_MODULE.cs" />
+    <Compile Include="MAIN_MODULE.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RSA_MODULE.cs" />
+    <Compile Include="CORE_MODULE.cs" />
+    <Compile Include="SUPPORT_MODULE.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
