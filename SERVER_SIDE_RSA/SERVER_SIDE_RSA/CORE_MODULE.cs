@@ -1,58 +1,117 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace SERVER_SIDE_RSA
 {
     public static class RSA_MODULE
     {
         public static int KEY_LENGTH { get; set; }
-        public static string EXPONENT { get; set; }
-        public static string MODULES { get; set; }
-        public static string P { get; set; }
-        public static string Q { get; set; }
-        public static string D { get; set; }
-        public static string DP { get; set; }
-        public static string DQ { get; set; }
-        public static string INVERSE_Q { get; set; }
 
-        //Creating RSA Service Provider With definite length
-        static RSACryptoServiceProvider OBJ_RSA_CRYPTO_SERVICE_PROVIDER = new RSACryptoServiceProvider(KEY_LENGTH);
+        //SERVER SIDE KEY GENERATORS 
+        public static string SERVER_EXPONENT { get; set; }
+        public static string SERVER_MODULES { get; set; }
+        public static string SERVER_P { get; set; }
+        public static string SERVER_Q { get; set; }
+        public static string SERVER_D { get; set; }
+        public static string SERVER_DP { get; set; }
+        public static string SERVER_DQ { get; set; }
+        public static string SERVER_INVERSE_Q { get; set; }
+
+        //CLIENT SIDE KEY GENERATORS
+        public static string CLIENT_EXPONENT { get; set; }
+        public static string CLIENT_MODULES { get; set; }
+        public static string CLIENT_P { get; set; }
+        public static string CLIENT_Q { get; set; }
+        public static string CLIENT_D { get; set; }
+        public static string CLIENT_DP { get; set; }
+        public static string CLIENT_DQ { get; set; }
+        public static string CLIENT_INVERSE_Q { get; set; }
+
+        public static string SERVER_SIDE_AES_KEY { get; set; }
+        public static string SERVER_SIDE_AES_IV { get; set; }
+
+        public static string CLIENT_SIDE_AES_KEY { get; set; }
+        public static string CLIENT_SIDE_AES_IV { get; set; }
+
+        public static void Initialize(int KEY_LENGTH)
+        {
+            RSA_MODULE.KEY_LENGTH = KEY_LENGTH;
+
+            string RSA_SERVER_parameters = server_side_random_private_key_generator();
+            XmlDocument server_xml_doc = new XmlDocument();
+            server_xml_doc.LoadXml(RSA_SERVER_parameters);
+            string server_jsosn_text = JsonConvert.SerializeXmlNode(server_xml_doc);
+            RSA_Conversion_Model server_obj = JsonConvert.DeserializeObject<RSA_Conversion_Model>(server_jsosn_text);
+
+            SERVER_EXPONENT = server_obj.RSAParameters.Exponent;
+            SERVER_MODULES = server_obj.RSAParameters.Modulus;
+            SERVER_P = server_obj.RSAParameters.P;
+            SERVER_Q = server_obj.RSAParameters.Q;
+            SERVER_D = server_obj.RSAParameters.D;
+            SERVER_DP = server_obj.RSAParameters.DP;
+            SERVER_DQ = server_obj.RSAParameters.DQ;
+            SERVER_INVERSE_Q = server_obj.RSAParameters.InverseQ;
+
+            string RSA_CLIENT_parameters = server_side_random_private_key_generator();
+            XmlDocument client_xml_doc = new XmlDocument();
+            client_xml_doc.LoadXml(RSA_CLIENT_parameters);
+            string client_jsosn_text = JsonConvert.SerializeXmlNode(client_xml_doc);
+            RSA_Conversion_Model client_obj = JsonConvert.DeserializeObject<RSA_Conversion_Model>(client_jsosn_text);
+
+            CLIENT_EXPONENT = client_obj.RSAParameters.Exponent;
+            CLIENT_MODULES = client_obj.RSAParameters.Modulus;
+            CLIENT_P = client_obj.RSAParameters.P;
+            CLIENT_Q = client_obj.RSAParameters.Q;
+            CLIENT_D = client_obj.RSAParameters.D;
+            CLIENT_DP = client_obj.RSAParameters.DP;
+            CLIENT_DQ = client_obj.RSAParameters.DQ;
+            CLIENT_INVERSE_Q = client_obj.RSAParameters.InverseQ;
+
+            SERVER_SIDE_AES_KEY = EDITIONAL_METHODS.unique_number_generator(16);
+            CLIENT_SIDE_AES_IV = EDITIONAL_METHODS.unique_number_generator(16);
+
+        }
+
 
         #region Server Key Generators
 
-        public static string private_key_generator()
+        public static string server_side_private_key_generator()
         {
             string final_string = string.Empty;
             final_string = @"<?xml version=""1.0"" encoding=""utf-16""?><RSAParameters xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"">" +
-                            "<Exponent>" + EXPONENT + "</Exponent>" +
-                            "<Modulus>" + MODULES + "</Modulus>" +
-                            "<P>" + P + "</P>" +
-                            "<Q>" + Q + "</Q>" +
-                            "<DP>" + DP + "</DP>" +
-                            "<DQ>" + DQ + "</DQ>" +
-                            "<InverseQ>" + INVERSE_Q + "</InverseQ>" +
-                            "<D>" + D + "</D>" +
+                            "<Exponent>" + SERVER_EXPONENT + "</Exponent>" +
+                            "<Modulus>" + SERVER_MODULES + "</Modulus>" +
+                            "<P>" + SERVER_P + "</P>" +
+                            "<Q>" + SERVER_Q + "</Q>" +
+                            "<DP>" + SERVER_DP + "</DP>" +
+                            "<DQ>" + SERVER_DQ + "</DQ>" +
+                            "<InverseQ>" + SERVER_INVERSE_Q + "</InverseQ>" +
+                            "<D>" + SERVER_D + "</D>" +
                             "</RSAParameters>";
             return final_string;
         }
 
-        public static string public_key_generator()
+        public static string server_side_public_key_generator()
         {
             string final_string = string.Empty;
             final_string = @"<?xml version=""1.0"" encoding=""utf-16""?><RSAParameters xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"">" +
-                            "<Exponent>" + EXPONENT + "</Exponent>" +
-                            "<Modulus>" + MODULES + "</Modulus>" +
+                            "<Exponent>" + CLIENT_EXPONENT + "</Exponent>" +
+                            "<Modulus>" + CLIENT_MODULES + "</Modulus>" +
                             "</RSAParameters>";
             return final_string;
         }
 
-        public static string random_private_key_generator()
+        public static string server_side_random_private_key_generator()
         {
+            //Creating RSA Service Provider With definite length
+            RSACryptoServiceProvider OBJ_RSA_CRYPTO_SERVICE_PROVIDER = new RSACryptoServiceProvider(KEY_LENGTH);
             //Ceating the private key Instance
             var obj_private_key = OBJ_RSA_CRYPTO_SERVICE_PROVIDER.ExportParameters(true);
             //Creating Instance for String Writer
@@ -65,8 +124,11 @@ namespace SERVER_SIDE_RSA
             return sw.ToString();
         }
 
-        public static string random_public_key_generation()
+        public static string server_side_random_public_key_generation()
         {
+
+            //Creating RSA Service Provider With definite length
+            RSACryptoServiceProvider OBJ_RSA_CRYPTO_SERVICE_PROVIDER = new RSACryptoServiceProvider(KEY_LENGTH);
             //Ceating the public key Instance
             var pubKey = OBJ_RSA_CRYPTO_SERVICE_PROVIDER.ExportParameters(false);
             //Creating Instance for String Writer
@@ -81,31 +143,30 @@ namespace SERVER_SIDE_RSA
 
         #endregion
 
-
         #region Client Key Generators
 
-        public static string client_private_key_generator()
+        public static string client_side_private_key_generator()
         {
             string final_string = string.Empty;
             final_string = @"<RSAKeyValue>" +
-                            "<Exponent>" + EXPONENT + "</Exponent>" +
-                            "<Modulus>" + MODULES + "</Modulus>" +
-                            "<P>" + P + "</P>" +
-                            "<Q>" + Q + "</Q>" +
-                            "<DP>" + DP + "</DP>" +
-                            "<DQ>" + DQ + "</DQ>" +
-                            "<InverseQ>" + INVERSE_Q + "</InverseQ>" +
-                            "<D>" + D + "</D>" +
+                            "<Exponent>" + CLIENT_EXPONENT + "</Exponent>" +
+                            "<Modulus>" + CLIENT_MODULES + "</Modulus>" +
+                            "<P>" + CLIENT_P + "</P>" +
+                            "<Q>" + CLIENT_Q + "</Q>" +
+                            "<DP>" + CLIENT_DP + "</DP>" +
+                            "<DQ>" + CLIENT_DQ + "</DQ>" +
+                            "<InverseQ>" + CLIENT_INVERSE_Q + "</InverseQ>" +
+                            "<D>" + CLIENT_D + "</D>" +
                             "</RSAKeyValue>";
             return final_string;
         }
 
-        public static string client_public_key_generator()
+        public static string client_side_public_key_generator()
         {
             string final_string = string.Empty;
             final_string = @"<RSAKeyValue>" +
-                            "<Exponent>" + EXPONENT + "</Exponent>" +
-                            "<Modulus>" + MODULES + "</Modulus>" +
+                            "<Exponent>" + SERVER_EXPONENT + "</Exponent>" +
+                            "<Modulus>" + SERVER_MODULES + "</Modulus>" +
                             "</RSAKeyValue>";
             return final_string;
         }
@@ -215,7 +276,7 @@ namespace SERVER_SIDE_RSA
             return Convert.ToBase64String(bytes_encrypted_data);
         }
 
-        private static byte[] AES_Encryption(string plainText, byte[] key, byte[] iv)
+        public static byte[] AES_Encryption(string plainText, byte[] key, byte[] iv)
         {
 
             byte[] encrypted;
@@ -282,7 +343,7 @@ namespace SERVER_SIDE_RSA
             return decrypted_data;
         }
 
-        private static string AES_Decryption(byte[] cipherText, byte[] key, byte[] iv)
+        public static string AES_Decryption(byte[] cipherText, byte[] key, byte[] iv)
         {
 
             string plaintext = null;
@@ -322,7 +383,7 @@ namespace SERVER_SIDE_RSA
 
     public static class EDITIONAL_METHODS
     {
-        private static byte[] base64url_to_bytes_converter(string base64Url)
+        public static byte[] base64url_to_bytes_converter(string base64Url)
         {
             string padded = base64Url.Length % 4 == 0
                 ? base64Url : base64Url + "====".Substring(base64Url.Length % 4);
@@ -330,7 +391,8 @@ namespace SERVER_SIDE_RSA
                                   .Replace("-", "+");
             return Convert.FromBase64String(base64);
         }
-        private static string HMAC_SHA256(string message, string key)
+
+        public static string HMAC_SHA256(string message, string key)
         {
             var encoding = new System.Text.ASCIIEncoding();
             byte[] keyByte = encoding.GetBytes(key);
@@ -342,6 +404,41 @@ namespace SERVER_SIDE_RSA
             }
         }
 
+        public static string unique_number_generator(int maxSize)
+        {
+            char[] chars = new char[62];
+            chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890".ToCharArray();
+            byte[] data = new byte[1];
+            using (RNGCryptoServiceProvider crypto = new RNGCryptoServiceProvider())
+            {
+                crypto.GetNonZeroBytes(data);
+                data = new byte[maxSize];
+                crypto.GetNonZeroBytes(data);
+            }
+            StringBuilder result = new StringBuilder(maxSize);
+            foreach (byte b in data)
+            {
+                result.Append(chars[b % (chars.Length)]);
+            }
+            return result.ToString();
+        }
+
+
     }
 
+    public class RSA_Conversion_Model
+    {
+        public RSA_Parameters RSAParameters { get; set; }
+    }
+    public class RSA_Parameters
+    {
+        public string Exponent { get; set; }
+        public string Modulus { get; set; }
+        public string P { get; set; }
+        public string Q { get; set; }
+        public string DP { get; set; }
+        public string DQ { get; set; }
+        public string D { get; set; }
+        public string InverseQ { get; set; }
+    }
 }
