@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Dynamic;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -17,7 +19,7 @@ namespace SERVER_SIDE_RSA
             obj.CLIENT_PUBLIC_KEY = RSA_MODULE.client_side_public_key_generator();
             return obj;
         }
-
+    
         public static string DECODE_DATA(string data)
         {
             try
@@ -35,7 +37,7 @@ namespace SERVER_SIDE_RSA
                 //string ENCRYPTED_DATA = Encoding.UTF8.GetString(buffer_2).ToString();
 
                 string RSA_ENCRYPTED_AES_KEY = values[0].Replace(" ", "+");
-                string ENCRYPTED_DATA = values[1].Replace(" ", "+"); 
+                string ENCRYPTED_DATA = values[1].Replace(" ", "+");
 
 
                 string AES_KEY_PAIR = RSA_MODULE.RSA_Decrypt(RSA_ENCRYPTED_AES_KEY, RSA_MODULE.server_side_private_key_generator());
@@ -78,7 +80,7 @@ namespace SERVER_SIDE_RSA
             {
                 throw new HttpResponseException(HttpStatusCode.BadRequest);
             }
-        }
+        } 
     }
 
     public class CLIEINT_AES_KEYS
@@ -93,5 +95,15 @@ namespace SERVER_SIDE_RSA
         public string CLIENT_PRIVATE_KEY { get; set; }
     }
 
+    public class TOKEN_MODEL
+    {
+        public string ISSUED_TIME { get; set; }
+        public string EXPIRY_TIME { get; set; }
+        public string UNIQUE_NUMBER { get; set; }
+        public string ISSUER { get; set; }
+        public string AUDIENCE { get; set; }
+        public List<string> ROLES { get; set; }
+
+    }
 
 }

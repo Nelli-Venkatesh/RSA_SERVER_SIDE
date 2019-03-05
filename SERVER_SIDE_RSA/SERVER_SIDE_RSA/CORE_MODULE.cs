@@ -1,11 +1,15 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Dynamic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web.Http;
 using System.Xml;
 
 namespace SERVER_SIDE_RSA
@@ -37,10 +41,30 @@ namespace SERVER_SIDE_RSA
         public static string SERVER_SIDE_AES_KEY { get; set; }
         public static string SERVER_SIDE_AES_IV { get; set; }
 
-        //public static string CLIENT_SIDE_AES_KEY { get; set; }
-        //public static string CLIENT_SIDE_AES_IV { get; set; }
+        public static string TOKEN_AES_KEY { get; set; }
+        public static string TOKEN_AES_IV { get; set; }
 
-        public static void Initialize(int KEY_LENGTH)
+        public static int expiry_seconds { set; get; }
+        public static int expiry_minutes { set; get; }
+        public static int expiry_hours { set; get; }
+        public static int expiry_days { set; get; }
+        public static int expiry_months { set; get; }
+        public static int expiry_year { set; get; }
+
+        public static string token_issuer { set; get; }
+        public static string token_audience { set; get; }
+
+        public static List<string> roles { get; set; }
+
+        public static string verify_issuer { get; set; }
+        public static string verify_audience { get; set; }
+
+        public static Dictionary<string, string> Response_Dictionary { get; set; }
+
+
+
+
+        public static void Initialize(int KEY_LENGTH, string Audience, string Issuer)
         {
 
             CORE_MODULE.KEY_LENGTH = KEY_LENGTH;
@@ -78,6 +102,20 @@ namespace SERVER_SIDE_RSA
             SERVER_SIDE_AES_KEY = EDITIONAL_METHODS.unique_number_generator(16);
             SERVER_SIDE_AES_IV = EDITIONAL_METHODS.unique_number_generator(16);
 
+            TOKEN_AES_KEY = EDITIONAL_METHODS.unique_number_generator(16);
+            TOKEN_AES_IV = EDITIONAL_METHODS.unique_number_generator(16);
+
+            try
+            {
+                Response_Dictionary = new Dictionary<string, string>();
+                roles = new List<string>();
+                token_issuer = Issuer;
+                token_audience = Audience;
+            }
+            catch (Exception ex)
+            {
+                throw new HttpResponseException(HttpStatusCode.BadRequest);
+            }
         }
 
     }
@@ -440,10 +478,192 @@ namespace SERVER_SIDE_RSA
         }
     }
 
+    public static class TOKEN_MODULE
+    {
+        public static dynamic generate_token()
+        {
+            try
+            {
+
+                dynamic objdata = new ExpandoObject();
+                objdata.issued_time = DateTime.UtcNow;
+                objdata.expiry_time = TOKEN_MODULE.generate_expiry_time();
+                objdata.unique_number = EDITIONAL_METHODS.unique_number_generator(16);
+                objdata.issuer = get_issuer();
+                objdata.audience = get_audience();
+                List<string> value = get_user_roles();
+                objdata.roles = value;
+                string token_data = JsonConvert.SerializeObject(objdata);
+                string encrypted_value = AES_MODULE.AES_ENCRYPTION_DATA(token_data, CORE_MODULE.TOKEN_AES_KEY, CORE_MODULE.TOKEN_AES_IV);
+                dynamic response = new ExpandoObject();
+                CORE_MODULE.Response_Dictionary.Add("access_token", encrypted_value);
+                return CORE_MODULE.Response_Dictionary;
+
+            }
+            catch (Exception ex)
+            {
+                throw new HttpResponseException(HttpStatusCode.BadRequest);
+            }
+
+        }
+
+        public static string TOKEN_DECODE_DATA(string data, List<string> authorize_roles = null)
+        {
+            try
+            {
+                string final_output = string.Empty;
+
+                if (string.IsNullOrEmpty(data))
+                    throw new HttpResponseException(HttpStatusCode.NoContent);
+                string[] values = data.Split('.');
+
+                string TOKEN = values[0].Replace(" ", "+");
+                string RSA_ENCRYPTED_AES_KEY = values[1].Replace(" ", "+");
+                string ENCRYPTED_DATA = values[2].Replace(" ", "+");
+
+                string token_json_format = String.Empty;
+                try { token_json_format = AES_MODULE.AES_DECRYPTION_DATA(TOKEN, CORE_MODULE.TOKEN_AES_KEY, CORE_MODULE.TOKEN_AES_IV); }
+                catch (Exception ex) { throw new HttpResponseException(HttpStatusCode.Unauthorized); }
+                TOKEN_MODEL token_params = JsonConvert.DeserializeObject<TOKEN_MODEL>(token_json_format);
+                if (!expiry_time_check(token_params.EXPIRY_TIME))
+                    throw new HttpResponseException(HttpStatusCode.RequestTimeout);
+                if (!roles_check(token_params.ROLES, authorize_roles))
+                    throw new HttpResponseException(HttpStatusCode.Unauthorized);
+                if (!issuer_check(token_params.ISSUER))
+                    throw new HttpResponseException(HttpStatusCode.Unauthorized);
+                if (!audience_check(token_params.AUDIENCE))
+                    throw new HttpResponseException(HttpStatusCode.Unauthorized);
+
+
+                string AES_KEY_PAIR = RSA_MODULE.RSA_Decrypt(RSA_ENCRYPTED_AES_KEY, RSA_MODULE.server_side_private_key_generator());
+
+                if (string.IsNullOrEmpty(AES_KEY_PAIR))
+                    throw new HttpResponseException(HttpStatusCode.NoContent);
+
+                CLIEINT_AES_KEYS obj_AES = JsonConvert.DeserializeObject<CLIEINT_AES_KEYS>(AES_KEY_PAIR);
+
+                final_output = AES_MODULE.AES_DECRYPTION_DATA(ENCRYPTED_DATA, obj_AES.KEY, obj_AES.IV);
+                if (string.IsNullOrEmpty(final_output))
+                    throw new HttpResponseException(HttpStatusCode.NoContent);
+
+                return final_output;
+            }
+            catch (Exception ex)
+            {
+                throw new HttpResponseException(HttpStatusCode.BadRequest);
+            }
+        }
+
+        private static string generate_expiry_time()
+        {
+            string date = "";
+            if (CORE_MODULE.expiry_seconds != 0)
+                date = DateTime.UtcNow.AddSeconds(CORE_MODULE.expiry_seconds).ToString();
+            else if (CORE_MODULE.expiry_minutes != 0)
+                date = DateTime.UtcNow.AddMinutes(CORE_MODULE.expiry_minutes).ToString();
+            else if (CORE_MODULE.expiry_hours != 0)
+                date = DateTime.UtcNow.AddHours(CORE_MODULE.expiry_hours).ToString();
+            else if (CORE_MODULE.expiry_days != 0)
+                date = DateTime.UtcNow.AddDays(CORE_MODULE.expiry_days).ToString();
+            else if (CORE_MODULE.expiry_months != 0)
+                date = DateTime.UtcNow.AddMonths(CORE_MODULE.expiry_months).ToString();
+            else if (CORE_MODULE.expiry_year != 0)
+                date = DateTime.UtcNow.AddYears(CORE_MODULE.expiry_year).ToString();
+            else
+                date = DateTime.UtcNow.AddDays(1).ToString();
+            return date;
+        }
+
+        private static bool expiry_time_check(string date)
+        {
+            DateTime expiry_date = DateTime.Parse(date);
+            DateTime current_date = DateTime.UtcNow;
+            int date_difference = Convert.ToInt32((expiry_date - current_date).TotalSeconds);
+            if (date_difference > 0)
+                return true;
+            return false;
+        }
+
+        private static string get_audience()
+        {
+            if (string.IsNullOrEmpty(CORE_MODULE.token_audience))
+                return "";
+            else
+                return CORE_MODULE.token_audience;
+        }
+
+        private static string get_issuer()
+        {
+            if (string.IsNullOrEmpty(CORE_MODULE.token_issuer))
+                return "";
+            else
+                return CORE_MODULE.token_issuer;
+        }
+
+        private static dynamic get_user_roles()
+        {
+            if (CORE_MODULE.roles != null && CORE_MODULE.roles.Count > 0)
+                return CORE_MODULE.roles;
+            else
+                return new List<string>();
+        }
+
+        private static void addRole(string role)
+        {
+            if (string.IsNullOrEmpty(role))
+                throw new NoNullAllowedException("Input Data Not Found");
+            else
+                CORE_MODULE.roles.Add(role);
+        }
+
+        private static bool roles_check(List<string> roles, List<string> authorize_roles)
+        {
+            if (roles == null || roles.Count < 1)
+                return true;
+            if (authorize_roles != null && authorize_roles.Count > 0)
+            {
+                for (int i = 0; i < authorize_roles.Count; i++)
+                {
+                    if (roles.Contains(authorize_roles[i]))
+                        return true;
+                }
+                return false;
+            }
+
+            return true;
+        }
+
+        private static bool issuer_check(string issuer)
+        {
+            if (issuer == CORE_MODULE.verify_issuer)
+                return true;
+            return false;
+        }
+
+        private static bool audience_check(string audience)
+        {
+            if (audience == CORE_MODULE.verify_audience)
+                return true;
+            return false;
+        }
+
+        public static void addResponse(string key, string value)
+        {
+            CORE_MODULE.Response_Dictionary.Add(key, value);
+        }
+
+        public static void addClaim(string claim)
+        {
+            addRole(claim);
+        }
+
+    }
+
     public class RSA_Conversion_Model
     {
         public RSA_Parameters RSAParameters { get; set; }
     }
+
     public class RSA_Parameters
     {
         public string Exponent { get; set; }
