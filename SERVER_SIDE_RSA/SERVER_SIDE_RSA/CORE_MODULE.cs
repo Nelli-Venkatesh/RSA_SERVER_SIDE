@@ -10,7 +10,7 @@ using System.Xml;
 
 namespace SERVER_SIDE_RSA
 {
-    public static class RSA_MODULE
+    public static class CORE_MODULE
     {
         public static int KEY_LENGTH { get; set; }
 
@@ -37,14 +37,15 @@ namespace SERVER_SIDE_RSA
         public static string SERVER_SIDE_AES_KEY { get; set; }
         public static string SERVER_SIDE_AES_IV { get; set; }
 
-        public static string CLIENT_SIDE_AES_KEY { get; set; }
-        public static string CLIENT_SIDE_AES_IV { get; set; }
+        //public static string CLIENT_SIDE_AES_KEY { get; set; }
+        //public static string CLIENT_SIDE_AES_IV { get; set; }
 
         public static void Initialize(int KEY_LENGTH)
         {
-            RSA_MODULE.KEY_LENGTH = KEY_LENGTH;
 
-            string RSA_SERVER_parameters = server_side_random_private_key_generator();
+            CORE_MODULE.KEY_LENGTH = KEY_LENGTH;
+
+            string RSA_SERVER_parameters = RSA_MODULE.server_side_random_private_key_generator();
             XmlDocument server_xml_doc = new XmlDocument();
             server_xml_doc.LoadXml(RSA_SERVER_parameters);
             string server_jsosn_text = JsonConvert.SerializeXmlNode(server_xml_doc);
@@ -59,7 +60,7 @@ namespace SERVER_SIDE_RSA
             SERVER_DQ = server_obj.RSAParameters.DQ;
             SERVER_INVERSE_Q = server_obj.RSAParameters.InverseQ;
 
-            string RSA_CLIENT_parameters = server_side_random_private_key_generator();
+            string RSA_CLIENT_parameters = RSA_MODULE.server_side_random_private_key_generator();
             XmlDocument client_xml_doc = new XmlDocument();
             client_xml_doc.LoadXml(RSA_CLIENT_parameters);
             string client_jsosn_text = JsonConvert.SerializeXmlNode(client_xml_doc);
@@ -75,10 +76,14 @@ namespace SERVER_SIDE_RSA
             CLIENT_INVERSE_Q = client_obj.RSAParameters.InverseQ;
 
             SERVER_SIDE_AES_KEY = EDITIONAL_METHODS.unique_number_generator(16);
-            CLIENT_SIDE_AES_IV = EDITIONAL_METHODS.unique_number_generator(16);
+            SERVER_SIDE_AES_IV = EDITIONAL_METHODS.unique_number_generator(16);
 
         }
 
+    }
+
+    public static class RSA_MODULE
+    {
 
         #region Server Key Generators
 
@@ -86,14 +91,14 @@ namespace SERVER_SIDE_RSA
         {
             string final_string = string.Empty;
             final_string = @"<?xml version=""1.0"" encoding=""utf-16""?><RSAParameters xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"">" +
-                            "<Exponent>" + SERVER_EXPONENT + "</Exponent>" +
-                            "<Modulus>" + SERVER_MODULES + "</Modulus>" +
-                            "<P>" + SERVER_P + "</P>" +
-                            "<Q>" + SERVER_Q + "</Q>" +
-                            "<DP>" + SERVER_DP + "</DP>" +
-                            "<DQ>" + SERVER_DQ + "</DQ>" +
-                            "<InverseQ>" + SERVER_INVERSE_Q + "</InverseQ>" +
-                            "<D>" + SERVER_D + "</D>" +
+                            "<Exponent>" + CORE_MODULE.SERVER_EXPONENT + "</Exponent>" +
+                            "<Modulus>" + CORE_MODULE.SERVER_MODULES + "</Modulus>" +
+                            "<P>" + CORE_MODULE.SERVER_P + "</P>" +
+                            "<Q>" + CORE_MODULE.SERVER_Q + "</Q>" +
+                            "<DP>" + CORE_MODULE.SERVER_DP + "</DP>" +
+                            "<DQ>" + CORE_MODULE.SERVER_DQ + "</DQ>" +
+                            "<InverseQ>" + CORE_MODULE.SERVER_INVERSE_Q + "</InverseQ>" +
+                            "<D>" + CORE_MODULE.SERVER_D + "</D>" +
                             "</RSAParameters>";
             return final_string;
         }
@@ -102,8 +107,8 @@ namespace SERVER_SIDE_RSA
         {
             string final_string = string.Empty;
             final_string = @"<?xml version=""1.0"" encoding=""utf-16""?><RSAParameters xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"">" +
-                            "<Exponent>" + CLIENT_EXPONENT + "</Exponent>" +
-                            "<Modulus>" + CLIENT_MODULES + "</Modulus>" +
+                            "<Exponent>" + CORE_MODULE.CLIENT_EXPONENT + "</Exponent>" +
+                            "<Modulus>" + CORE_MODULE.CLIENT_MODULES + "</Modulus>" +
                             "</RSAParameters>";
             return final_string;
         }
@@ -111,7 +116,7 @@ namespace SERVER_SIDE_RSA
         public static string server_side_random_private_key_generator()
         {
             //Creating RSA Service Provider With definite length
-            RSACryptoServiceProvider OBJ_RSA_CRYPTO_SERVICE_PROVIDER = new RSACryptoServiceProvider(KEY_LENGTH);
+            RSACryptoServiceProvider OBJ_RSA_CRYPTO_SERVICE_PROVIDER = new RSACryptoServiceProvider(CORE_MODULE.KEY_LENGTH);
             //Ceating the private key Instance
             var obj_private_key = OBJ_RSA_CRYPTO_SERVICE_PROVIDER.ExportParameters(true);
             //Creating Instance for String Writer
@@ -128,7 +133,7 @@ namespace SERVER_SIDE_RSA
         {
 
             //Creating RSA Service Provider With definite length
-            RSACryptoServiceProvider OBJ_RSA_CRYPTO_SERVICE_PROVIDER = new RSACryptoServiceProvider(KEY_LENGTH);
+            RSACryptoServiceProvider OBJ_RSA_CRYPTO_SERVICE_PROVIDER = new RSACryptoServiceProvider(CORE_MODULE.KEY_LENGTH);
             //Ceating the public key Instance
             var pubKey = OBJ_RSA_CRYPTO_SERVICE_PROVIDER.ExportParameters(false);
             //Creating Instance for String Writer
@@ -149,14 +154,14 @@ namespace SERVER_SIDE_RSA
         {
             string final_string = string.Empty;
             final_string = @"<RSAKeyValue>" +
-                            "<Exponent>" + CLIENT_EXPONENT + "</Exponent>" +
-                            "<Modulus>" + CLIENT_MODULES + "</Modulus>" +
-                            "<P>" + CLIENT_P + "</P>" +
-                            "<Q>" + CLIENT_Q + "</Q>" +
-                            "<DP>" + CLIENT_DP + "</DP>" +
-                            "<DQ>" + CLIENT_DQ + "</DQ>" +
-                            "<InverseQ>" + CLIENT_INVERSE_Q + "</InverseQ>" +
-                            "<D>" + CLIENT_D + "</D>" +
+                            "<Exponent>" + CORE_MODULE.CLIENT_EXPONENT + "</Exponent>" +
+                            "<Modulus>" + CORE_MODULE.CLIENT_MODULES + "</Modulus>" +
+                            "<P>" + CORE_MODULE.CLIENT_P + "</P>" +
+                            "<Q>" + CORE_MODULE.CLIENT_Q + "</Q>" +
+                            "<DP>" + CORE_MODULE.CLIENT_DP + "</DP>" +
+                            "<DQ>" + CORE_MODULE.CLIENT_DQ + "</DQ>" +
+                            "<InverseQ>" + CORE_MODULE.CLIENT_INVERSE_Q + "</InverseQ>" +
+                            "<D>" + CORE_MODULE.CLIENT_D + "</D>" +
                             "</RSAKeyValue>";
             return final_string;
         }
@@ -165,8 +170,8 @@ namespace SERVER_SIDE_RSA
         {
             string final_string = string.Empty;
             final_string = @"<RSAKeyValue>" +
-                            "<Exponent>" + SERVER_EXPONENT + "</Exponent>" +
-                            "<Modulus>" + SERVER_MODULES + "</Modulus>" +
+                            "<Exponent>" + CORE_MODULE.SERVER_EXPONENT + "</Exponent>" +
+                            "<Modulus>" + CORE_MODULE.SERVER_MODULES + "</Modulus>" +
                             "</RSAKeyValue>";
             return final_string;
         }
@@ -177,7 +182,7 @@ namespace SERVER_SIDE_RSA
 
         public static string RSA_Encrypt(string plain_data, string public_key)
         {
-            var RSA_CSP = new RSACryptoServiceProvider(KEY_LENGTH);
+            var RSA_CSP = new RSACryptoServiceProvider(CORE_MODULE.KEY_LENGTH);
 
             //converting public key from string format to RSA Parameter
             var new_public_final_key = new RSAParameters();
@@ -213,7 +218,7 @@ namespace SERVER_SIDE_RSA
 
         public static string RSA_Decrypt(string encrypted_data, string private_key)
         {
-            var RSA_CSP = new RSACryptoServiceProvider(KEY_LENGTH);
+            var RSA_CSP = new RSACryptoServiceProvider(CORE_MODULE.KEY_LENGTH);
 
             //converting private key from string format to RSA Parameter
             var new_private_final_key = new RSAParameters();
@@ -423,7 +428,16 @@ namespace SERVER_SIDE_RSA
             return result.ToString();
         }
 
+        public static string string_to_base64_conversion(string data)
+        {
+            byte[] bytes = Encoding.UTF8.GetBytes(data);
 
+            char[] padding = { '=' };
+
+            string returnValue = System.Convert.ToBase64String(bytes)
+            .TrimEnd(padding).Replace('+', '-').Replace('/', '_');
+            return returnValue;
+        }
     }
 
     public class RSA_Conversion_Model
