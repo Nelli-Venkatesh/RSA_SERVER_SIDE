@@ -481,6 +481,7 @@ namespace SERVER_SIDE_RSA
         {
             try
             {
+                Dictionary<string, string> Response_Dictionary = new Dictionary<string, string>();
 
                 dynamic objdata = new ExpandoObject();
                 objdata.issued_time = DateTime.UtcNow;
@@ -494,45 +495,56 @@ namespace SERVER_SIDE_RSA
                 string encrypted_value = AES_MODULE.AES_ENCRYPTION_DATA(token_data, CORE_MODULE.TOKEN_AES_KEY, CORE_MODULE.TOKEN_AES_IV);
                 dynamic response = new ExpandoObject();
                 CORE_MODULE.Response_Dictionary.Add("access_token", encrypted_value);
-                return CORE_MODULE.Response_Dictionary;
+                foreach (KeyValuePair<string, string> key_pair in CORE_MODULE.Response_Dictionary)
+                {
+                    Response_Dictionary.Add(key_pair.Key, key_pair.Value);
+                }
+
+                CORE_MODULE.Response_Dictionary.Clear();
+                CORE_MODULE.roles.Clear();
+
+                return Response_Dictionary;
             }
             catch (Exception ex)
             {
                 throw new HttpResponseException(HttpStatusCode.BadRequest);
             }
-            finally
-            {
-                CORE_MODULE.Response_Dictionary.Clear();
-            }
         }
 
         public static string TOKEN_DECODE_DATA(string data, List<string> authorize_roles = null)
         {
+            string token_json_format = string.Empty;
+            string final_output = string.Empty;
+
+            if (string.IsNullOrEmpty(data))
+                throw new HttpResponseException(HttpStatusCode.NoContent);
+            string[] values = data.Split('.');
+
+            string TOKEN = values[0].Replace(" ", "+");
+            string RSA_ENCRYPTED_AES_KEY = values[1].Replace(" ", "+");
+            string ENCRYPTED_DATA = values[2].Replace(" ", "+");
             try
             {
-                string final_output = string.Empty;
 
-                if (string.IsNullOrEmpty(data))
-                    throw new HttpResponseException(HttpStatusCode.NoContent);
-                string[] values = data.Split('.');
+                token_json_format = AES_MODULE.AES_DECRYPTION_DATA(TOKEN, CORE_MODULE.TOKEN_AES_KEY, CORE_MODULE.TOKEN_AES_IV);
+            }
+            catch (Exception ex)
+            {
+                throw new HttpResponseException(HttpStatusCode.Unauthorized);
 
-                string TOKEN = values[0].Replace(" ", "+");
-                string RSA_ENCRYPTED_AES_KEY = values[1].Replace(" ", "+");
-                string ENCRYPTED_DATA = values[2].Replace(" ", "+");
+            }
+            TOKEN_MODEL token_params = JsonConvert.DeserializeObject<TOKEN_MODEL>(token_json_format);
+            if (!expiry_time_check(token_params.EXPIRY_TIME))
+                throw new HttpResponseException(HttpStatusCode.RequestTimeout);
+            if (!roles_check(token_params.ROLES, authorize_roles))
+                throw new HttpResponseException(HttpStatusCode.Unauthorized);
+            if (!issuer_check(token_params.ISSUER))
+                throw new HttpResponseException(HttpStatusCode.Unauthorized);
+            if (!audience_check(token_params.AUDIENCE))
+                throw new HttpResponseException(HttpStatusCode.Unauthorized);
 
-                string token_json_format = String.Empty;
-                try { token_json_format = AES_MODULE.AES_DECRYPTION_DATA(TOKEN, CORE_MODULE.TOKEN_AES_KEY, CORE_MODULE.TOKEN_AES_IV); }
-                catch (Exception ex) { throw new HttpResponseException(HttpStatusCode.Unauthorized); }
-                TOKEN_MODEL token_params = JsonConvert.DeserializeObject<TOKEN_MODEL>(token_json_format);
-                if (!expiry_time_check(token_params.EXPIRY_TIME))
-                    throw new HttpResponseException(HttpStatusCode.RequestTimeout);
-                if (!roles_check(token_params.ROLES, authorize_roles))
-                    throw new HttpResponseException(HttpStatusCode.Unauthorized);
-                if (!issuer_check(token_params.ISSUER))
-                    throw new HttpResponseException(HttpStatusCode.Unauthorized);
-                if (!audience_check(token_params.AUDIENCE))
-                    throw new HttpResponseException(HttpStatusCode.Unauthorized);
-
+            try
+            {
 
                 string AES_KEY_PAIR = RSA_MODULE.RSA_Decrypt(RSA_ENCRYPTED_AES_KEY, RSA_MODULE.server_side_private_key_generator());
 
@@ -634,14 +646,14 @@ namespace SERVER_SIDE_RSA
 
         private static bool issuer_check(string issuer)
         {
-            if (issuer == CORE_MODULE.verify_issuer)
+            if (string.IsNullOrEmpty(issuer) || issuer == CORE_MODULE.verify_issuer)
                 return true;
             return false;
         }
 
         private static bool audience_check(string audience)
         {
-            if (audience == CORE_MODULE.verify_audience)
+            if (string.IsNullOrEmpty(audience) || audience == CORE_MODULE.verify_audience)
                 return true;
             return false;
         }
