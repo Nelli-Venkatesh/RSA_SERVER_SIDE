@@ -61,10 +61,7 @@ namespace SERVER_SIDE_RSA
 
         public static Dictionary<string, string> Response_Dictionary { get; set; }
 
-
-
-
-        public static void Initialize(int KEY_LENGTH, string Audience, string Issuer)
+        public static void Initialize(int KEY_LENGTH, string Audience = "", string Issuer = "")
         {
 
             CORE_MODULE.KEY_LENGTH = KEY_LENGTH;
@@ -319,7 +316,7 @@ namespace SERVER_SIDE_RSA
             return Convert.ToBase64String(bytes_encrypted_data);
         }
 
-        public static byte[] AES_Encryption(string plainText, byte[] key, byte[] iv)
+        private static byte[] AES_Encryption(string plainText, byte[] key, byte[] iv)
         {
 
             byte[] encrypted;
@@ -386,7 +383,7 @@ namespace SERVER_SIDE_RSA
             return decrypted_data;
         }
 
-        public static string AES_Decryption(byte[] cipherText, byte[] key, byte[] iv)
+        private static string AES_Decryption(byte[] cipherText, byte[] key, byte[] iv)
         {
 
             string plaintext = null;
@@ -498,13 +495,15 @@ namespace SERVER_SIDE_RSA
                 dynamic response = new ExpandoObject();
                 CORE_MODULE.Response_Dictionary.Add("access_token", encrypted_value);
                 return CORE_MODULE.Response_Dictionary;
-
             }
             catch (Exception ex)
             {
                 throw new HttpResponseException(HttpStatusCode.BadRequest);
             }
-
+            finally
+            {
+                CORE_MODULE.Response_Dictionary.Clear();
+            }
         }
 
         public static string TOKEN_DECODE_DATA(string data, List<string> authorize_roles = null)
