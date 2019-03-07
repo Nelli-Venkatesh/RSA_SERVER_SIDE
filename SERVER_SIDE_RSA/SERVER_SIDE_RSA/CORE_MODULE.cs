@@ -38,12 +38,15 @@ namespace SERVER_SIDE_RSA
         public static string CLIENT_DQ { get; set; }
         public static string CLIENT_INVERSE_Q { get; set; }
 
+        //SERVER SIDE AES KEY PAIR FOR DATA ENCRYPTION WHEN SENDING RESPONSE WITH ENCRYPTION            
         public static string SERVER_SIDE_AES_KEY { get; set; }
         public static string SERVER_SIDE_AES_IV { get; set; }
 
+        //SERVER SIDE TOKEN AES KEYS FOR TOKEN DATA ENCRYPTION
         public static string TOKEN_AES_KEY { get; set; }
         public static string TOKEN_AES_IV { get; set; }
 
+        //TOKEN EXPIRY TIME SETUP
         public static int expiry_seconds { set; get; }
         public static int expiry_minutes { set; get; }
         public static int expiry_hours { set; get; }
@@ -51,27 +54,39 @@ namespace SERVER_SIDE_RSA
         public static int expiry_months { set; get; }
         public static int expiry_year { set; get; }
 
+        //TOKEN ISSUER AND AUDIENCE DATA
         public static string token_issuer { set; get; }
         public static string token_audience { set; get; }
 
+        //TOKEN ROLES
         public static List<string> roles { get; set; }
 
+        //TOKEN VERIFICATION OF ISSUER AND AUDIENCE
         public static string verify_issuer { get; set; }
         public static string verify_audience { get; set; }
 
+        //RESPONSE PARAMETERS SENDING WITH TOKEN
         public static Dictionary<string, string> Response_Dictionary { get; set; }
 
+        //INITIALIZATION OF ALL METHODS
         public static void Initialize(int KEY_LENGTH, string Audience = "", string Issuer = "")
         {
-
+            //INITIALIZING KEY LENGTH
             CORE_MODULE.KEY_LENGTH = KEY_LENGTH;
 
+            //GETTING PRIVATE KEY GENERATION FOR CLIENT SIDE PUBLIC KEY AND SERVER SIDE PRIVATE KEY
             string RSA_SERVER_parameters = RSA_MODULE.server_side_random_private_key_generator();
+
+            //CREATION OF XML INSTANCE
             XmlDocument server_xml_doc = new XmlDocument();
+            //LOADING STRING INTO XML
             server_xml_doc.LoadXml(RSA_SERVER_parameters);
+            //SERILIZING XML DATA INTO JSON FORMAT
             string server_jsosn_text = JsonConvert.SerializeXmlNode(server_xml_doc);
+            //deserialization of data using model
             RSA_Conversion_Model server_obj = JsonConvert.DeserializeObject<RSA_Conversion_Model>(server_jsosn_text);
 
+            //setting parameters into server rsa parameter variables
             SERVER_EXPONENT = server_obj.RSAParameters.Exponent;
             SERVER_MODULES = server_obj.RSAParameters.Modulus;
             SERVER_P = server_obj.RSAParameters.P;
@@ -81,12 +96,18 @@ namespace SERVER_SIDE_RSA
             SERVER_DQ = server_obj.RSAParameters.DQ;
             SERVER_INVERSE_Q = server_obj.RSAParameters.InverseQ;
 
+
+            //GETTING PRIVATE KEY GENERATION FOR SERVER SIDE PUBLIC KEY AND CLIENT SIDE PRIVATE KEY
             string RSA_CLIENT_parameters = RSA_MODULE.server_side_random_private_key_generator();
+            //CREATION OF XML INSTANCE
             XmlDocument client_xml_doc = new XmlDocument();
+            //LOADING STRING INTO XML
             client_xml_doc.LoadXml(RSA_CLIENT_parameters);
+            //SERILIZING XML DATA INTO JSON FORMAT
             string client_jsosn_text = JsonConvert.SerializeXmlNode(client_xml_doc);
             RSA_Conversion_Model client_obj = JsonConvert.DeserializeObject<RSA_Conversion_Model>(client_jsosn_text);
 
+            //setting parameters into client rsa parameter variables
             CLIENT_EXPONENT = client_obj.RSAParameters.Exponent;
             CLIENT_MODULES = client_obj.RSAParameters.Modulus;
             CLIENT_P = client_obj.RSAParameters.P;
@@ -96,6 +117,7 @@ namespace SERVER_SIDE_RSA
             CLIENT_DQ = client_obj.RSAParameters.DQ;
             CLIENT_INVERSE_Q = client_obj.RSAParameters.InverseQ;
 
+            //Unique number assigning as a key for AES_KEY and IV values of both SERVER SIDE AES and TOKEN Generation
             SERVER_SIDE_AES_KEY = EDITIONAL_METHODS.unique_number_generator(16);
             SERVER_SIDE_AES_IV = EDITIONAL_METHODS.unique_number_generator(16);
 
@@ -104,6 +126,7 @@ namespace SERVER_SIDE_RSA
 
             try
             {
+                //Adding add responses to final response and assigning values
                 Response_Dictionary = new Dictionary<string, string>();
                 roles = new List<string>();
                 token_issuer = Issuer;
@@ -122,6 +145,7 @@ namespace SERVER_SIDE_RSA
 
         #region Server Key Generators
 
+        //server side private key generation for decrypt data from client side
         public static string server_side_private_key_generator()
         {
             string final_string = string.Empty;
@@ -138,6 +162,7 @@ namespace SERVER_SIDE_RSA
             return final_string;
         }
 
+        //server side public key generation for encrypt data before sending
         public static string server_side_public_key_generator()
         {
             string final_string = string.Empty;
@@ -148,6 +173,7 @@ namespace SERVER_SIDE_RSA
             return final_string;
         }
 
+        //random private key generation in xml format
         public static string server_side_random_private_key_generator()
         {
             //Creating RSA Service Provider With definite length
@@ -164,6 +190,7 @@ namespace SERVER_SIDE_RSA
             return sw.ToString();
         }
 
+        //random public key generation in xml format
         public static string server_side_random_public_key_generation()
         {
 
@@ -185,6 +212,7 @@ namespace SERVER_SIDE_RSA
 
         #region Client Key Generators
 
+        //client side private key generation for decrypt data to show in client
         public static string client_side_private_key_generator()
         {
             string final_string = string.Empty;
@@ -201,6 +229,7 @@ namespace SERVER_SIDE_RSA
             return final_string;
         }
 
+        //client side pubic key generation for encrypt data before sending to server
         public static string client_side_public_key_generator()
         {
             string final_string = string.Empty;
@@ -215,6 +244,7 @@ namespace SERVER_SIDE_RSA
 
         #region RSA Data Encryption
 
+        //RSA data encryption using public key 
         public static string RSA_Encrypt(string plain_data, string public_key)
         {
             var RSA_CSP = new RSACryptoServiceProvider(CORE_MODULE.KEY_LENGTH);
@@ -251,6 +281,7 @@ namespace SERVER_SIDE_RSA
 
         #region RSA Data Decryption
 
+        //RSA data decryption using private key
         public static string RSA_Decrypt(string encrypted_data, string private_key)
         {
             var RSA_CSP = new RSACryptoServiceProvider(CORE_MODULE.KEY_LENGTH);
@@ -291,6 +322,7 @@ namespace SERVER_SIDE_RSA
     {
         #region AES ENCRYPTION
 
+        //data encryption using AES and return encrypted string
         public static string AES_ENCRYPTION_DATA(string data, string key_value, string iv_value)
         {
 
@@ -316,6 +348,7 @@ namespace SERVER_SIDE_RSA
             return Convert.ToBase64String(bytes_encrypted_data);
         }
 
+        //CORE AES Encryption Method
         private static byte[] AES_Encryption(string plainText, byte[] key, byte[] iv)
         {
 
@@ -357,6 +390,7 @@ namespace SERVER_SIDE_RSA
 
         #region AES DECRYPTION
 
+        //data decryption using AES and return decrypted string
         public static string AES_DECRYPTION_DATA(string data, string key_value, string iv_value)
         {
             if (data == null || data.Length <= 0)
@@ -383,6 +417,7 @@ namespace SERVER_SIDE_RSA
             return decrypted_data;
         }
 
+        //CORE AES Decryption Method
         private static string AES_Decryption(byte[] cipherText, byte[] key, byte[] iv)
         {
 
@@ -423,6 +458,7 @@ namespace SERVER_SIDE_RSA
 
     public static class EDITIONAL_METHODS
     {
+        //To convert Base64URL into bytes conversion
         public static byte[] base64url_to_bytes_converter(string base64Url)
         {
             string padded = base64Url.Length % 4 == 0
@@ -432,6 +468,7 @@ namespace SERVER_SIDE_RSA
             return Convert.FromBase64String(base64);
         }
 
+        //HMAC SHA256 hash generation
         public static string HMAC_SHA256(string message, string key)
         {
             var encoding = new System.Text.ASCIIEncoding();
@@ -444,6 +481,7 @@ namespace SERVER_SIDE_RSA
             }
         }
 
+        //Unique number generation with required size
         public static string unique_number_generator(int maxSize)
         {
             char[] chars = new char[62];
@@ -463,6 +501,7 @@ namespace SERVER_SIDE_RSA
             return result.ToString();
         }
 
+        //string to base64 conversion
         public static string string_to_base64_conversion(string data)
         {
             byte[] bytes = Encoding.UTF8.GetBytes(data);
@@ -477,29 +516,40 @@ namespace SERVER_SIDE_RSA
 
     public static class TOKEN_MODULE
     {
+        //Token generation Method
         public static dynamic generate_token()
         {
             try
             {
+                //Initializing Response Dictionary for returning token in json format with required parameters
                 Dictionary<string, string> Response_Dictionary = new Dictionary<string, string>();
-
+                //creating dynamic object
                 dynamic objdata = new ExpandoObject();
+                //adding issuing time 
                 objdata.issued_time = DateTime.UtcNow;
+                //adding expiry time
                 objdata.expiry_time = TOKEN_MODULE.generate_expiry_time();
+                //adding unique number for distinct token generation
                 objdata.unique_number = EDITIONAL_METHODS.unique_number_generator(16);
+                //adding issuer who issuing this token
                 objdata.issuer = get_issuer();
+                //adding audience who can use this token
                 objdata.audience = get_audience();
+                //adding roles who can access using this token
                 List<string> value = get_user_roles();
                 objdata.roles = value;
+                //serializing dynamic object into json string 
                 string token_data = JsonConvert.SerializeObject(objdata);
+                //encrypt token json string using AES encryption
                 string encrypted_value = AES_MODULE.AES_ENCRYPTION_DATA(token_data, CORE_MODULE.TOKEN_AES_KEY, CORE_MODULE.TOKEN_AES_IV);
-                dynamic response = new ExpandoObject();
+                //adding generated token as access_token key pair value
                 CORE_MODULE.Response_Dictionary.Add("access_token", encrypted_value);
                 foreach (KeyValuePair<string, string> key_pair in CORE_MODULE.Response_Dictionary)
                 {
                     Response_Dictionary.Add(key_pair.Key, key_pair.Value);
                 }
 
+                //clearing parameters
                 CORE_MODULE.Response_Dictionary.Clear();
                 CORE_MODULE.roles.Clear();
 
@@ -515,17 +565,19 @@ namespace SERVER_SIDE_RSA
         {
             string token_json_format = string.Empty;
             string final_output = string.Empty;
-
+            
+            //spliting string into string array 
             if (string.IsNullOrEmpty(data))
                 throw new HttpResponseException(HttpStatusCode.NoContent);
             string[] values = data.Split('.');
 
+            //assigning parameters
             string TOKEN = values[0].Replace(" ", "+");
             string RSA_ENCRYPTED_AES_KEY = values[1].Replace(" ", "+");
             string ENCRYPTED_DATA = values[2].Replace(" ", "+");
             try
             {
-
+                //decrypting token to get token json string
                 token_json_format = AES_MODULE.AES_DECRYPTION_DATA(TOKEN, CORE_MODULE.TOKEN_AES_KEY, CORE_MODULE.TOKEN_AES_IV);
             }
             catch (Exception ex)
@@ -533,30 +585,38 @@ namespace SERVER_SIDE_RSA
                 throw new HttpResponseException(HttpStatusCode.Unauthorized);
 
             }
+            //converting json string into model object
             TOKEN_MODEL token_params = JsonConvert.DeserializeObject<TOKEN_MODEL>(token_json_format);
+            //checking expiry time
             if (!expiry_time_check(token_params.EXPIRY_TIME))
                 throw new HttpResponseException(HttpStatusCode.RequestTimeout);
+            //checking roles
             if (!roles_check(token_params.ROLES, authorize_roles))
                 throw new HttpResponseException(HttpStatusCode.Unauthorized);
+            //checking issuer
             if (!issuer_check(token_params.ISSUER))
                 throw new HttpResponseException(HttpStatusCode.Unauthorized);
+            //checking audience
             if (!audience_check(token_params.AUDIENCE))
                 throw new HttpResponseException(HttpStatusCode.Unauthorized);
 
             try
             {
-
+                //decrypting aes key pair for data decryption
                 string AES_KEY_PAIR = RSA_MODULE.RSA_Decrypt(RSA_ENCRYPTED_AES_KEY, RSA_MODULE.server_side_private_key_generator());
 
                 if (string.IsNullOrEmpty(AES_KEY_PAIR))
                     throw new HttpResponseException(HttpStatusCode.NoContent);
 
+                //creating model object for key pair
                 CLIEINT_AES_KEYS obj_AES = JsonConvert.DeserializeObject<CLIEINT_AES_KEYS>(AES_KEY_PAIR);
 
+                //decryption of data using AES key pair
                 final_output = AES_MODULE.AES_DECRYPTION_DATA(ENCRYPTED_DATA, obj_AES.KEY, obj_AES.IV);
                 if (string.IsNullOrEmpty(final_output))
                     throw new HttpResponseException(HttpStatusCode.NoContent);
 
+                //returning decrypted value
                 return final_output;
             }
             catch (Exception ex)
@@ -564,7 +624,7 @@ namespace SERVER_SIDE_RSA
                 throw new HttpResponseException(HttpStatusCode.BadRequest);
             }
         }
-
+        
         private static string generate_expiry_time()
         {
             string date = "";
@@ -670,6 +730,7 @@ namespace SERVER_SIDE_RSA
 
     }
 
+    //Models for RSA Parameter Conversion
     public class RSA_Conversion_Model
     {
         public RSA_Parameters RSAParameters { get; set; }
