@@ -36,7 +36,7 @@ I Will update Nuget Library key shortly.
     }
       
 ``` 
-**FOR TOKEN GENERATION : **
+FOR TOKEN GENERATION : 
 ```markdown
     [HttpGet]
     [Route("get_token")]
@@ -46,7 +46,7 @@ I Will update Nuget Library key shortly.
       return Ok(TOKEN_MODULE.generate_token());
     }
 ```
-**FOR PUBLIC AND PRIVATE KEY GENERATION : **
+FOR PUBLIC AND PRIVATE KEY GENERATION : 
 ```markdown
     [HttpGet]
     [Route("server_and_client_rsa_api")]
