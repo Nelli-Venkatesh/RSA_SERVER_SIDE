@@ -37,24 +37,24 @@ I Will update Nuget Library key shortly.
       
 ``` 
 **FOR TOKEN GENERATION : **
-
-[HttpGet]
-[Route("get_token")]
-public IHttpActionResult get_token()
-{
-  TOKEN_MODULE.addResponse("Success", "200");  //you can add many parameters with the access_token 
-  return Ok(TOKEN_MODULE.generate_token());
-}
-
+```markdown
+    [HttpGet]
+    [Route("get_token")]
+    public IHttpActionResult get_token()
+    {
+      TOKEN_MODULE.addResponse("Success", "200");  //you can add many parameters with the access_token 
+      return Ok(TOKEN_MODULE.generate_token());
+    }
+```
 **FOR PUBLIC AND PRIVATE KEY GENERATION : **
-
-[HttpGet]
-[Route("server_and_client_rsa_api")]
-public IHttpActionResult server_and_client_rsa_api()
-{
-  return Ok(MAIN_MODULE.SERVER_CLIENT_RSA_PAIR());
-}
-  
+```markdown
+    [HttpGet]
+    [Route("server_and_client_rsa_api")]
+    public IHttpActionResult server_and_client_rsa_api()
+    {
+      return Ok(MAIN_MODULE.SERVER_CLIENT_RSA_PAIR());
+    }
+```  
   
 ### Support or Contact
 For any issues in the code please raise an issue or mail me for any other information. 
