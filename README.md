@@ -1,37 +1,43 @@
-## Welcome to GitHub Pages
-
-You can use the [editor on GitHub](https://github.com/Venkatesh-Nelli/RSA_SERVER_SIDE/edit/master/README.md) to maintain and preview the content for your website in Markdown files.
-
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
-
-### Markdown
-
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+## .NET RSA AES SERVER SIDE LIBRARY FOR SECURE DATA TRANSMISSION
 
 ```markdown
-Syntax highlighted code block
-
-# Header 1
-## Header 2
-### Header 3
-
-- Bulleted
-- List
-
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
+This library used to send and recieve data in secure way from server to client side and client side to server.
+For client side i have used angular JS services with Google Crypto JS and JsClasses for RSA. 
+Using this library data can be transmitted both sides encrypted and in secure way.In the middle you can't access the data.
 ```
+### Nuget Library : 
+  You can find client side encryption and decryption in another github repository [CLIENT SIDE RSA WITH EXAMPLE SOLUTION](https://github.com/Venkatesh-Nelli/RSA_CLIENT_SIDE)
+  
+  
+  ### Usage 
+  Create a web api solution in the visual studio and in the Global.asax and in the Application_Start() initialize the library using ` CORE_MODULE.Initialize(4096);` line the number `4096` is the RSA encryption key length you can use different key lengths 4096,2048,1024,512.
+  To Decrypt the data sent from the client in the controller just use the `string decoded_data = MAIN_MODULE.DECODE_DATA(data);` and in the string you'll get JSON data in the string.
+  To Encrypt the data before sending it to client side use `string encrypted_data = MAIN_MODULE.ENCODE_DATA(decoded_data);` 
+  
+  ### Example
+  
+        [HttpGet]
+        [Route("get_Test")]
+        public IHttpActionResult get_Test(string data)
+        {
 
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
+            string decoded_data = MAIN_MODULE.DECODE_DATA(data);
+            string encrypted_data = MAIN_MODULE.ENCODE_DATA(decoded_data);
+            return Ok(decoded_data);
+        }
 
-### Jekyll Themes
+        [HttpPost]
+        [Route("post_Test")]
+        public IHttpActionResult post_Test(dynamic data)
+        {
 
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/Venkatesh-Nelli/RSA_SERVER_SIDE/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
+            string decoded_data = MAIN_MODULE.DECODE_DATA(data);
+            string encrypted_data = MAIN_MODULE.ENCODE_DATA(decoded_data);
+            return Ok(decoded_data);
+        }
+        
+      
+  
+  
 ### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://help.github.com/categories/github-pages-basics/) or [contact support](https://github.com/contact) and we’ll help you sort it out.
+For any issues in the code please raise an issue or mail me for any other information. 
