@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>SecureSpace</id>
+    <version>1.0.0</version>
+    <title>SecureSpace</title>
+    <authors>Nelli Venkatesh</authors>
+    <owners>Nelli Venkatesh</owners>
+  	<license type="file">license.txt</license>
+    <projectUrl>https://github.com/Nelli-Venkatesh/RSA_SERVER_SIDE</projectUrl>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <description>I'm Very Lazy To Write Description</description>
+    <releaseNotes>This is First release of the package.</releaseNotes>
+    <copyright>Copyright 2019</copyright>
+    <tags>AES RSA encryption</tags>
+  </metadata>
+  <files>
+      <file src="license.txt" target="" />
+  </files>
+</package>

@@ -52,8 +52,9 @@ namespace SERVER_SIDE_RSA
             }
         }
 
-        public static string ENCODE_DATA(string data)
+        public static string ENCODE_DATA(dynamic dynamic_data)
         {
+            string data = JsonConvert.SerializeObject(dynamic_data);
             try
             {
                 string final_data = string.Empty;

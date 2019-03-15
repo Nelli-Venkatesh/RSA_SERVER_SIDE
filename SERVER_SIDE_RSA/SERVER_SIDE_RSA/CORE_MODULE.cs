@@ -561,11 +561,11 @@ namespace SERVER_SIDE_RSA
             }
         }
 
-        public static string TOKEN_DECODE_DATA(string data, List<string> authorize_roles = null)
+        public static string TOKEN_DECODE_DATA(string data)
         {
             string token_json_format = string.Empty;
             string final_output = string.Empty;
-            
+
             //spliting string into string array 
             if (string.IsNullOrEmpty(data))
                 throw new HttpResponseException(HttpStatusCode.NoContent);
@@ -591,7 +591,7 @@ namespace SERVER_SIDE_RSA
             if (!expiry_time_check(token_params.EXPIRY_TIME))
                 throw new HttpResponseException(HttpStatusCode.RequestTimeout);
             //checking roles
-            if (!roles_check(token_params.ROLES, authorize_roles))
+            if (!roles_check(token_params.ROLES, CORE_MODULE.roles))
                 throw new HttpResponseException(HttpStatusCode.Unauthorized);
             //checking issuer
             if (!issuer_check(token_params.ISSUER))
@@ -616,6 +616,8 @@ namespace SERVER_SIDE_RSA
                 if (string.IsNullOrEmpty(final_output))
                     throw new HttpResponseException(HttpStatusCode.NoContent);
 
+                CORE_MODULE.roles.Clear();
+
                 //returning decrypted value
                 return final_output;
             }
@@ -624,7 +626,7 @@ namespace SERVER_SIDE_RSA
                 throw new HttpResponseException(HttpStatusCode.BadRequest);
             }
         }
-        
+
         private static string generate_expiry_time()
         {
             string date = "";
@@ -689,19 +691,19 @@ namespace SERVER_SIDE_RSA
 
         private static bool roles_check(List<string> roles, List<string> authorize_roles)
         {
-            if (roles == null || roles.Count < 1)
+            if (authorize_roles.Count < 1)
                 return true;
-            if (authorize_roles != null && authorize_roles.Count > 0)
+            if (roles != null && roles.Count > 0)
             {
-                for (int i = 0; i < authorize_roles.Count; i++)
+                for (int i = 0; i < roles.Count; i++)
                 {
-                    if (roles.Contains(authorize_roles[i]))
+                    if (authorize_roles.Contains(roles[i]))
                         return true;
                 }
                 return false;
             }
 
-            return true;
+            return false;
         }
 
         private static bool issuer_check(string issuer)
