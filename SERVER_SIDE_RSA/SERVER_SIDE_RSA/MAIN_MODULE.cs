@@ -17,6 +17,7 @@ namespace SERVER_SIDE_RSA
             SERVER_CLIENT_RSA_KEYS obj = new SERVER_CLIENT_RSA_KEYS();
             obj.CLIENT_PRIVATE_KEY = RSA_MODULE.client_side_private_key_generator();
             obj.CLIENT_PUBLIC_KEY = RSA_MODULE.client_side_public_key_generator();
+            obj.SESSION_KEY = EDITIONAL_METHODS.unique_code_generator(16);
             return obj;
         }
 
@@ -86,6 +87,7 @@ namespace SERVER_SIDE_RSA
     {
         public string CLIENT_PUBLIC_KEY { get; set; }
         public string CLIENT_PRIVATE_KEY { get; set; }
+        public string SESSION_KEY { get; set; }
     }
 
     public class TOKEN_MODEL

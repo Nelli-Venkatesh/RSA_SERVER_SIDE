@@ -118,11 +118,11 @@ namespace SERVER_SIDE_RSA
             CLIENT_INVERSE_Q = client_obj.RSAParameters.InverseQ;
 
             //Unique number assigning as a key for AES_KEY and IV values of both SERVER SIDE AES and TOKEN Generation
-            SERVER_SIDE_AES_KEY = EDITIONAL_METHODS.unique_number_generator(16);
-            SERVER_SIDE_AES_IV = EDITIONAL_METHODS.unique_number_generator(16);
+            SERVER_SIDE_AES_KEY = EDITIONAL_METHODS.unique_code_generator(16);
+            SERVER_SIDE_AES_IV = EDITIONAL_METHODS.unique_code_generator(16);
 
-            TOKEN_AES_KEY = EDITIONAL_METHODS.unique_number_generator(16);
-            TOKEN_AES_IV = EDITIONAL_METHODS.unique_number_generator(16);
+            TOKEN_AES_KEY = EDITIONAL_METHODS.unique_code_generator(16);
+            TOKEN_AES_IV = EDITIONAL_METHODS.unique_code_generator(16);
 
             try
             {
@@ -482,7 +482,7 @@ namespace SERVER_SIDE_RSA
         }
 
         //Unique number generation with required size
-        public static string unique_number_generator(int maxSize)
+        public static string unique_code_generator(int maxSize)
         {
             char[] chars = new char[62];
             chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890".ToCharArray();
@@ -530,7 +530,7 @@ namespace SERVER_SIDE_RSA
                 //adding expiry time
                 objdata.expiry_time = TOKEN_MODULE.generate_expiry_time();
                 //adding unique number for distinct token generation
-                objdata.unique_number = EDITIONAL_METHODS.unique_number_generator(16);
+                objdata.unique_number = EDITIONAL_METHODS.unique_code_generator(16);
                 //adding issuer who issuing this token
                 objdata.issuer = get_issuer();
                 //adding audience who can use this token
