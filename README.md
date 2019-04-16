@@ -6,7 +6,7 @@ For client side i have used angular JS services with Google Crypto JS and JsClas
 Using this library data can be transmitted both sides encrypted and in secure way.In the middle you can't access the data.
 ```
 ### Nuget Library : 
-  You can download nuget pakcage from here [Nuget Library] (https://www.nuget.org/packages/SecureSpace/).
+  You can download nuget pakcage from here [Nuget Library](https://www.nuget.org/packages/SecureSpace/).
   You can find client side encryption and decryption in another github repository [CLIENT SIDE RSA WITH EXAMPLE SOLUTION](https://github.com/Venkatesh-Nelli/RSA_CLIENT_SIDE)
   
   
