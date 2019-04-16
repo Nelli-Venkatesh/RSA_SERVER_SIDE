@@ -8,9 +8,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http;
 using Newtonsoft.Json;
-namespace SERVER_SIDE_RSA
+namespace SECURE_SPACE
 {
-    public static class MAIN_MODULE
+    public static class SECURE_MODULE
     {
         public static SERVER_CLIENT_RSA_KEYS SERVER_CLIENT_RSA_PAIR()
         {

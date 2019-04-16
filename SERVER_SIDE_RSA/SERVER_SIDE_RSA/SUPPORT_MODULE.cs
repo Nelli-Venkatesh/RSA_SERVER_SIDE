@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SERVER_SIDE_RSA
+namespace SECURE_SPACE
 {
     class SUPPORT_MODULE
     {

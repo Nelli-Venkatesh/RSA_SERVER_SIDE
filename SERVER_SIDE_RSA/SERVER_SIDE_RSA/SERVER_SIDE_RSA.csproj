@@ -48,7 +48,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="MAIN_MODULE.cs" />
+    <Compile Include="SECURE_MODULE.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="CORE_MODULE.cs" />
     <Compile Include="SUPPORT_MODULE.cs" />

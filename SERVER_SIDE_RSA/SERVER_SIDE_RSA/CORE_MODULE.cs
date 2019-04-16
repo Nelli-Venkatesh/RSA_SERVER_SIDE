@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using System.Xml;
 
-namespace SERVER_SIDE_RSA
+namespace SECURE_SPACE
 {
     public static class CORE_MODULE
     {
@@ -561,7 +561,7 @@ namespace SERVER_SIDE_RSA
             }
         }
 
-        public static string TOKEN_DECODE_DATA(string data)
+        public static string DECODE_DATA(string data)
         {
             string token_json_format = string.Empty;
             string final_output = string.Empty;
