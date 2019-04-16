@@ -2,11 +2,11 @@
 <package >
   <metadata>
     <id>SecureSpace</id>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <title>SecureSpace</title>
     <authors>Nelli Venkatesh</authors>
     <owners>Nelli Venkatesh</owners>
-  	<license type="file">license.txt</license>
+    <license type="file">license.txt</license>
     <projectUrl>https://github.com/Nelli-Venkatesh/RSA_SERVER_SIDE</projectUrl>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
     <description>I'm Very Lazy To Write Description</description>
